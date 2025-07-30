@@ -1,4 +1,4 @@
-This README has been created based on a machine running on Mac, so some of the Windows instructions may be lacking, please fill in any gaps found.
+This README has been created based on a machine running on Mac, so some of the Windows instructions may be lacking, please fill in any gaps found. This repo is being built alongside learning so there's no timeline nor goal in mind for this repo. It's being designed, currently, to be a bare-bones repo that has enough to start new projects with but is not intended to actually do anything with beyond some testing. The idea will be that it'll be developed on a Mac, for AWS via terraform and using python. There's scope to add Docker but knowledge is limited still. 
 
 # Required Installation
 
@@ -119,7 +119,7 @@ When you are done working, you can exit the virtual environment using the comman
 
 `source deactivate`
 
-# Useful extensions
+# Useful VS Code extensions
 
 If you are using Visual Studio Code, look into the following extensions:
 
