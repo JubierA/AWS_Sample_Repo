@@ -14,49 +14,86 @@ To ensure that only properly linted and security-aligned code has been pushed, p
 
 Virtual environments are useful as they allow you to have several indepedent python versions running on your machine and it allows you to select which version you like for your repository. By having an isolated virtual environment with the same packages, you and any other developer working on the project should have the same setup.
 
-MacOS or Linux users should look into using [pyenv](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation), Windows users should look into using [venv](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#create-and-use-virtual-environments). Instructions are given below for MacOS/Linux and Windows. Follow the steps below to create and activate the the virtual environments according to your OS, then move onto the Getting Started section.
+Users should look into using UV which is a modern project manager which includes pip and virtual enviornments. Instructions are given below for MacOS/Linux and Windows. Follow the steps below to create and activate the the virtual environments according to your OS, then move onto the Getting Started section.
 
-## MacOS/Linux - pyenv
+## Installing UV
 
-If you are using Mac/Linux and do not already have virtualenv installed, do so now.
+If you are using Mac/Linux and do not already have UV installed, do so now using any of the following commands. More methods can be found in the [documentation](https://docs.astral.sh/uv/getting-started/installation/).
 
-`pip3 install virtualenv`
+Just need to use one of these, whichever works first:
 
-For this repo, we will be using python version 3.11.9, it is important we use the same version to ensure everything works for the same regardless of the machine it is running on.
+Linux/Mac:
 
-`pyenv install 3.11.9`
+`brew install uv`
 
-Once we have the python version installed, we can now create a profile for our repo, we will call it 'poc_tf_aws' and it will use version 3.11.9.
+`curl -LsSf https://astral.sh/uv/install.sh | sh`
 
-`pyenv virtualenv 3.11.9 poc_tf_aws`
+`pip install uv`
 
-Now that the profile has been created, we can enter the virtual environment using the activate command and stating which profile we wish to activate.
+Windows:
 
-`pyenv activate poc_tf_aws`
+`brew install uv`
 
-## Windows - venv
+`powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
 
-Start by going into the parent working directory which is the project folder. Then run the command below to create the .venv folder with all the required files. This will isolate your virtual environment, so long as you pick the activate file from this directory.
+`pip install uv`
 
-`py -m venv .venv`
+Note: this project has already been initialised with `uv init` and commited so this command can be skipped.
 
-After the `.venv` folder and the files have been created, you can then activate the env using the command:
+## Activating virtual environments
 
-`.venv\Scripts\activate`
+For this repo, we will be using python version 3.11.9, it is important we use the same version to ensure everything works for the same regardless of the machine it is running on. As the UV package is quite a powerful tool, the version doesn't need to be stated, it will be picked up by the pyproject.toml file. Use the command below to create the virtual environment.
 
-# Getting started
+`uv venv`
 
-Now that we have activated a virtual environment, we can begin our python commands, we will start by installing all the necessary packages that are listed out in the requirements.txt file.
+Note: there are a lot more methods for handling venv, including naming them and having multiple venvs (would require adding to the .gitignore) but not necessary for this project.
 
-`pip3 install -r requirements.txt`
+Now that the [.venv](.venv/) folder has been created, it is time to active it using the following commands.
+
+Linux/Mac: `source .venv/bin/activate`
+
+Windows: `.venv\Scripts\activate`
+
+Note: you can check if you're in the virtual environment by running `which python` in Linux/Mac or `where python` in Windows, if it is active, it should point at the python installation in the .venv folder.
+
+You can exit the virtual environment with the `deactivate` command but if this is your first time going through this readme then there are still additional steps to set up.
+
+## Python packages
+
+Now that we have activated a virtual environment, we can begin our python commands, we will start by installing all the necessary packages that are listed out in the pyproject.toml file by syncing the package requirements to the venv.
+
+`uv sync`
+
+Note: in case you do any specific pip installations ensure that commands begin with `uv` otherwise pip commands will be installed in your main python path, not your virtual environment.
+
+You can also add new packages using `uv add with various [parameters](https://docs.astral.sh/uv/guides/projects/#managing-dependencies):
+
+`uv add --dev "pytest>=8.3.2"`
+
+Note: similarly to remove packages, just replace `add` with `remove`. If you manually add/remove a package to/from the pyproject.toml file, remember to run the command `uv sync` to ensure that the uv.lock file also gets synced. The uv.lock file contains all the package config and should not be manually altered.
+
+That is it in terms of setting up and running in UV venvs. In case you want to run any scripts try the `uv run <script_name>.py` command. UV is still quite new to a lot of developers so take the time to read the docs.
+
+# Pytest
+
+Now that the virtual environment is set up, you can now use python such as running tests. Pytest is a package installed earlier and the command below runs pytest against the tests subfolder. If the tests succeed, a coverage report is also created - this shows how much of the code is covered by tests, aiming for 100%.
+
+`uv run -m pytest tests && uv run coverage report -m`
+
+If the cover is less than 100%, the report will output the lines where code isn't covered. Parameters can be added to test specifix scripts or even specific functions. Ex: `uv run -m pytest tests/test_file_uploads.py::test_get_filenames`
+
+If you need to run any scripts, as no infrastructure has been set up to run them just yet you can use the command `uv run <script_name>.py`.
+
 
 To get terraform up and running on your local machine, terraform must be initialised which involves installing providers, in this case, terraform itself and AWS.
+
+# Terraform
 
 `terraform init`
 
 Before any further terraform commands can be ran, terraform needs to know what to compare against. The plan/apply/destroy steps involve look at what is in the code against what resources currently exist. To know what currently exists, we need to pass credentials through so terraform can look at out AWS account. 
 
-GloudGuru will provide several log in details, some include logging into the UI (link, username, and password), and the information we are interested in for connecting up our repository which is the `AWS_ACCESS_KEY_ID` and the `AWS_SECRET_ACCESS_KEY`. As the sandbox is constantly being recreated, we will not save a profile instead typing this out every time into the terminal.
+GloudGuru will provide several log in details, some include logging into the UI (url, username, and password), and also the information we are interested in for connecting up our repository which is the `AWS_ACCESS_KEY_ID` and the `AWS_SECRET_ACCESS_KEY`. As the sandbox is constantly being recreated, we will not save a profile instead typing this out every time into the terminal. Once a permanent account is created, then some profiles can be made and stored locally.
 
 Paste the variables into the terminal and enter the required keys, according to your [machine](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html), below is Mac:
 
@@ -73,12 +110,6 @@ Once you're happy with the plan, you can then apply the changes using the comman
 `terraform apply`
 
 Once the infrastructure has been applied, you can confirm this by logging onto AWS or using the command `terraform state list`, you can also use `terraform state [resource.reference_name]` to show you the specifics of a single resource.
-
-Now that the infrastructure is set up, you can now use python against the infrastrcuture such as running tests. Pytest is a package installed earlier and the command below runs pytest against the tests subfolder. If the tests succeed, a coverage report is also created - this shows how much of the code is covered by tests, aiming for 100%. 
-
-`pytest tests && pytest --cov`
-
-If you need to run any scripts, as no infrastructure has been set up to run them just yet you can use the command `python [filename].py`, ideally within the virtual environment. 
 
 When the resources are no longer required, you can use the command below. This is useful from both a cost and green perspective as you don't want to spin up resources longer than what is required.
 
